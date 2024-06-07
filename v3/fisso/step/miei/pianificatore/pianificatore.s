@@ -516,10 +516,14 @@ build_res_string_loop_end:
 
 print_res:
 
+    cmpb $1, first_print
+    je not_first_print
+    
     movl res_string_addr_tmp, %eax
     subl res_string_addr, %eax
     movl %eax, res_string_len
 
+not_first_print:
     movl $4, %eax
     movl $1, %ebx
     movl res_string_addr, %ecx
@@ -545,7 +549,8 @@ print_res:
     movl $4, %eax
     movl $1, %ebx
     leal buffer_itoa, %ecx
-    movl itoa_digit, %edx
+    xorl %edx, %edx
+    movb itoa_digit_tmp, %dl
     int $0x80
 
     movl $4, %eax
@@ -573,7 +578,8 @@ print_res:
     movl $4, %eax
     movl $1, %ebx
     movl $buffer_itoa, %ecx
-    movl $3, %edx
+    xorl %edx, %edx
+    movb itoa_digit_tmp, %dl
     int $0x80
 
     movl $4, %eax
@@ -590,6 +596,24 @@ print_res:
 
     cmpb $2, output_mode
     jne ask_alg
+
+    jmp output_print_start
+
+
+output_print_start:
+    # Apre il file di output 
+    movl $5, %eax                       # Chiamata di sistema open
+    movl filename_output, %ebx          # Percorso del file
+    movl $0101, %ecx                    # Modalità di apertura (O_CREAT | O_WRONLY)
+    movl $0644, %edx                    # Permessi del file (0644) (Permesso di lettura e scrittura per il proprietario, solo lettura per il gruppo e per gli altri utenti)
+    int $0x80                           # Interruzione software per invocare la chiamata di sistema
+
+    cmpl $0, %eax
+    jl file_open_error
+
+    # Salva il file descriptor restituito
+    movl %eax, fd_output                # File descriptor in "fd_output"
+
 
 
     movb alg, %al                       # verifica che valore è stato inserito
@@ -618,20 +642,6 @@ output_HPF_print:
     jmp output_print
 
 output_print:
-    # Apre il file di output 
-    movl $5, %eax                       # Chiamata di sistema open
-    movl filename_output, %ebx          # Percorso del file
-    movl $0101, %ecx                    # Modalità di apertura (O_CREAT | O_WRONLY)
-    movl $0644, %edx                    # Permessi del file (0644) (Permesso di lettura e scrittura per il proprietario, solo lettura per il gruppo e per gli altri utenti)
-    int $0x80                           # Interruzione software per invocare la chiamata di sistema
-
-    cmpl $0, %eax
-    jl file_open_error
-
-    # Salva il file descriptor restituito
-    movl %eax, fd_output                # File descriptor in "fd_output"
-
-
     movl res_string_addr_tmp, %eax
     subl res_string_addr, %eax
     movl %eax, res_string_len
@@ -661,7 +671,8 @@ output_print:
     movl $4, %eax
     movl fd_output, %ebx
     leal buffer_itoa, %ecx
-    movl $3, %edx
+    xorl %edx, %edx
+    movb itoa_digit_tmp, %dl
     int $0x80
 
     movl $4, %eax
@@ -689,19 +700,8 @@ output_print:
     movl $4, %eax
     movl fd_output, %ebx
     movl $buffer_itoa, %ecx
-    movl $3, %edx
-    int $0x80
-
-    movl $4, %eax
-    movl fd_output, %ebx
-    movl $newline, %ecx
-    movl $1, %edx
-    int $0x80
-
-    movl $4, %eax
-    movl fd_output, %ebx
-    movl $newline, %ecx
-    movl $1, %edx
+    xorl %edx, %edx
+    movb itoa_digit_tmp, %dl
     int $0x80
 
     # Chiude il file
@@ -791,6 +791,8 @@ itoa_loop_a:
     jmp itoa_loop_a                     # Richiama ricorsivamente itoa_loop_a
 
 itoa_end:
+    movb itoa_digit, %bl
+    movb %bl, itoa_digit_tmp
     cmpb $1, itoa_digit
     je itoa_end_no_inv
 
