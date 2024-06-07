@@ -1,0 +1,10 @@
+Attività 1: Fare la spesa
+Attività 2: Pulire la casa
+Attività 3: Studiare per l esame
+Attività 4: Fare una passeggiata
+Attività 5: Preparare la cena
+Attività 6: Guardare un film
+Attività 7: Allenarsi in palestra
+Attività 8: Leggere un libro
+Attività 9: Scrivere codice
+Attività 10: Fare una telefonata

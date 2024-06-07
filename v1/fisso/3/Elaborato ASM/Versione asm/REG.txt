@@ -1,0 +1,29 @@
+EAX	
+ AX
+  AH	
+  AL	
+
+EBX	indirizzo p0 + offset vari (deve puntare alla base del prodotto successivo alla fine di ogni ciclo)
+ BX	
+  BH	
+  BL	
+
+ECX	
+ CX	
+  CH	
+  CL	
+
+EDX	
+ DX	
+  DH	contatore prodotti gestiti
+  DL	contatore virgole trovate (azzerato ogni loop)
+
+ESI	indirizzo p0_dl + offset vari
+
+EDI	indirizzo p0_pr + offset vari
+
+
+
+
+as -gstabs pianificatore.s -o pianificatore.o -32
+ld -m elf_i386 -o pianificatore pianificatore.o
