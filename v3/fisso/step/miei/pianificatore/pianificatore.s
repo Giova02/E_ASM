@@ -17,6 +17,8 @@
         .long . - invalid_args_num_msg
     output_mode:                        # 1 = Terminal only   |   2 = Terminal + File
         .byte 0
+    first_print:
+        .byte 0
 
 # FILE LETTURA
     product_n:
@@ -515,9 +517,10 @@ build_res_string_loop_end:
 
 
 print_res:
-
     cmpb $1, first_print
     je not_first_print
+
+    incb first_print
     
     movl res_string_addr_tmp, %eax
     subl res_string_addr, %eax
