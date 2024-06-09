@@ -41,8 +41,6 @@
       .int 0
 
 # ASK ALG
-    alg:
-        .byte 0
     ask_alg_msg:
         .ascii "(?): Quale algoritmo di pianificazione dovrà usare il programma?\n\t1) Earliest Deadline First (EDF)\n\t2) Highest Priority First (HPF)\n\nPremi CTRL + C per uscire\n\n> "
     ask_alg_msg_len:
@@ -74,6 +72,8 @@
     penalty:
         .int 0
     swap_c:
+        .byte 0
+    alg:
         .byte 0
 
 # ITOA
@@ -502,8 +502,7 @@ build_res_string_loop_nti:
     movl res_string_addr_tmp, %edx
 
 build_res_string_loop_end:
-    movb $10, (%edx)                    # simbolo d'intermezzo tra i due valori
-
+    movb $10, (%edx)                    # simbolo di newline
     incl res_string_addr_tmp
     movl res_string_addr_tmp, %edx
 
@@ -517,16 +516,10 @@ build_res_string_loop_end:
 
 
 print_res:
-    cmpb $1, first_print
-    je not_first_print
-
-    incb first_print
-    
     movl res_string_addr_tmp, %eax
     subl res_string_addr, %eax
     movl %eax, res_string_len
 
-not_first_print:
     movl $4, %eax
     movl $1, %ebx
     movl res_string_addr, %ecx
@@ -598,7 +591,7 @@ not_first_print:
     int $0x80
 
     cmpb $2, output_mode
-    jne ask_alg
+    jne clear_buffers
 
     jmp output_print_start
 
@@ -712,7 +705,28 @@ output_print:
     movl fd_output, %ebx                # File descriptor
     int $0x80                           # Interruzione software per invocare la chiamata di sistema
 
-    jmp ask_alg
+    jmp clear_buffers
+
+
+
+clear_buffers:
+    movl $0, res_string_len             
+    xorl %ecx, %ecx                     # svuota variabile contatore
+    movl res_string_addr, %eax          # indirizzo di start per l'azzeramento dei buffer
+
+clear_buffers_loop:
+    cmpb product_n, %cl
+    je ask_alg                          # ha azzerato ogni byte allocato dai buffer
+
+    incl %eax
+    cmpb $10, -1(%eax)                  # verifica quanti \n sono stati inseriti
+    movb $0, -1(%eax)
+
+    jne clear_buffers_loop
+
+    incb %cl                            # incrementa il contatore di newline
+
+    jmp clear_buffers_loop
 
 
 

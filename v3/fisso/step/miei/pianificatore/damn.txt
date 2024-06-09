@@ -1,8 +1,0 @@
-Pianificazione EDF:
-:0
-:
-:
-:
-Conclusione: 22
-Penalty: 02
-Penalty: 0
